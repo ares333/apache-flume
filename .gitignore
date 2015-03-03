@@ -1,4 +1,5 @@
-target/
+flume-ng-dist/target/
+flume-ng-plugin/target/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup

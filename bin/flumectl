@@ -1,0 +1,79 @@
+#!/bin/bash
+#脚本文件必须位于flume的bin目录
+. /etc/rc.d/init.d/functions
+debug=INFO
+if [ "/" != ${0:0:1} ];then
+	dirCurrent=$(pwd -P)/$0
+else
+	dirCurrent=$0
+fi
+dirCurrent=${dirCurrent/\/\.\//\/}
+dirCurrent=${dirCurrent%/*}
+dirBase=${dirCurrent%/*}
+pid=
+RETVAL=0
+
+running(){
+	cmd='ps -o pid,command -C java|grep "[o]rg\.apache\.flume\.node\.Application"|grep "\-[n] "'$1
+	cmd=$cmd"|awk '{print \$1}'"
+	pid=(`eval $cmd`)
+	if [ ${#pid[*]} -gt 0 ];then
+		echo -n $pid
+		return 0
+	else
+		return 1
+	fi
+}
+
+stop(){
+	running $1 > /dev/null
+	echo -n "stoping $1... "
+	for v in ${pid[@]}
+	do
+		kill -9 $v
+	done
+	if [ ${#pid[@]} -gt 0 ];then
+		echo_success
+	else
+		echo_failure
+	fi
+	echo
+}
+
+start(){
+	running $1 > /dev/null
+	r=$?
+	if [ $r -eq 0 ];then
+		echo -n "$1 is running, pid=$pid"
+		echo_failure
+		echo
+	else
+		cd $dirBase;bin/flume-ng agent -n $1 -c conf -f $dirBase/conf/$1.conf -Dflume.root.logger=$debug,$1 > $dirBase/logs/$1.out 2>&1 &
+		echo -n "source should be started"
+		echo_success
+		echo
+	fi
+}
+
+restart(){
+	stop $1
+	start $1
+}
+
+case $1 in
+"start"|"stop"|"restart"|"running")
+	case $2 in
+	"source"|"sink")
+		$1 $2
+		RETVAL=$?
+		;;
+	*)
+		echo "invalid flume type, type="$2
+		;;
+	esac
+	;;
+*)
+	echo -e "Usage:\nstart,stop,restart,running [source|sink]"
+	;;
+esac
+exit $RETVAL
