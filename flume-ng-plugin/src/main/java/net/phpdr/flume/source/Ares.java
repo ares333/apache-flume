@@ -34,7 +34,7 @@ public class Ares extends AbstractSource implements Configurable,
 		PollableSource {
 	private static final Logger logger = LoggerFactory.getLogger(Ares.class);
 	private String finishDir = "_finished";
-	private int maxThread = 1024;
+	private int maxThread = 16;
 	private Map<String, HashMap<String, String>> param = Collections
 			.synchronizedMap(new HashMap<String, HashMap<String, String>>());
 	private int keepAlive;
@@ -48,6 +48,7 @@ public class Ares extends AbstractSource implements Configurable,
 	private int sleepTimeBackoff = 1000;
 	private HashMap<String, String> nodeFailed = null;
 
+	@Override
 	public void configure(Context context) {
 		// 主目录,主目录|类型,文件超时,编码|子目录
 		String[] lines = context.getString("param").split("\\s");
@@ -71,9 +72,11 @@ public class Ares extends AbstractSource implements Configurable,
 	/**
 	 * 定时检查this.path如果有新文件就读取
 	 */
+	@Override
 	public synchronized void start() {
 		super.start();
 		scannerTimer.scheduleAtFixedRate(new TimerTask() {
+			@Override
 			public void run() {
 				if (Ares.this.threadList.size() < Ares.this.maxThread) {
 					for (String k : Ares.this.param.keySet()) {
@@ -118,6 +121,7 @@ public class Ares extends AbstractSource implements Configurable,
 	/**
 	 * 关闭文件句柄等善后工作
 	 */
+	@Override
 	public synchronized void stop() {
 		super.stop();
 		this.scannerTimer.cancel();
@@ -133,7 +137,7 @@ public class Ares extends AbstractSource implements Configurable,
 
 	/**
 	 * 发送Event到Channel，Status不用BACKOFF(因为sleep时间会越来越长，不符合当前业务)
-	 * 
+	 *
 	 * @throws EventDeliveryException
 	 */
 	@Override
@@ -175,7 +179,7 @@ public class Ares extends AbstractSource implements Configurable,
 
 	/**
 	 * 读文件到this.queue，如果文件完成就移走。
-	 * 
+	 *
 	 */
 	class FileReader implements Runnable {
 		String file;
