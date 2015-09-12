@@ -14,7 +14,6 @@ import org.apache.flume.FlumeException;
 import org.apache.flume.conf.ComponentConfiguration;
 import org.apache.flume.sink.hbase.AsyncHbaseEventSerializer;
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.hbase.async.AtomicIncrementRequest;
 import org.hbase.async.PutRequest;
 import org.slf4j.Logger;
@@ -54,6 +53,7 @@ public class AresSerializer implements AsyncHbaseEventSerializer {
 			this.tables.get(key).put(node1[2],
 					new String[] { nodes[1], nodes[2] });
 		}
+		/*
 		HashMap<String, Object> kafkaConfig = new HashMap<String, Object>();
 		kafkaConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
 				"61.147.105.252:9092");
@@ -63,6 +63,7 @@ public class AresSerializer implements AsyncHbaseEventSerializer {
 		kafkaConfig.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
 				"org.apache.kafka.common.serialization.StringSerializer");
 		producer = new KafkaProducer<String, String>(kafkaConfig);
+		*/
 		this.cf = cf;
 	}
 
@@ -182,7 +183,7 @@ public class AresSerializer implements AsyncHbaseEventSerializer {
 
 	@Override
 	public void cleanUp() {
-		producer.close();
+		//producer.close();
 	}
 
 	@Override
