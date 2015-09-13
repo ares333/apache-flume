@@ -13,7 +13,6 @@ import org.apache.flume.Event;
 import org.apache.flume.FlumeException;
 import org.apache.flume.conf.ComponentConfiguration;
 import org.apache.flume.sink.hbase.AsyncHbaseEventSerializer;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.hbase.async.AtomicIncrementRequest;
 import org.hbase.async.PutRequest;
 import org.slf4j.Logger;
@@ -34,7 +33,6 @@ public class AresSerializer implements AsyncHbaseEventSerializer {
 	private HashMap<byte[], byte[][]> values = new HashMap<byte[], byte[][]>();
 	private static final Logger logger = LoggerFactory
 			.getLogger(AresSerializer.class);
-	private KafkaProducer<String, String> producer;
 
 	/**
 	 * type,dir,table|qualifiers|rowkey
@@ -53,17 +51,6 @@ public class AresSerializer implements AsyncHbaseEventSerializer {
 			this.tables.get(key).put(node1[2],
 					new String[] { nodes[1], nodes[2] });
 		}
-		/*
-		HashMap<String, Object> kafkaConfig = new HashMap<String, Object>();
-		kafkaConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-				"61.147.105.252:9092");
-		kafkaConfig.put(ProducerConfig.CLIENT_ID_CONFIG, "flume-sink");
-		kafkaConfig.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-				"org.apache.kafka.common.serialization.StringSerializer");
-		kafkaConfig.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-				"org.apache.kafka.common.serialization.StringSerializer");
-		producer = new KafkaProducer<String, String>(kafkaConfig);
-		*/
 		this.cf = cf;
 	}
 
@@ -157,9 +144,6 @@ public class AresSerializer implements AsyncHbaseEventSerializer {
 				}
 				rowKafka = rowKafka.substring(0, rowKafka.length() - 1);
 				row = row.substring(0, row.length() - 1);
-				/*ProducerRecord<String, String> record = new ProducerRecord<String, String>(
-						"odps", new String(v, this.charset), rowKafka);
-				producer.send(record);*/
 				logger.debug(row);
 			} catch (UnsupportedEncodingException e) {
 				logger.error(e.getMessage());
@@ -183,7 +167,6 @@ public class AresSerializer implements AsyncHbaseEventSerializer {
 
 	@Override
 	public void cleanUp() {
-		//producer.close();
 	}
 
 	@Override
